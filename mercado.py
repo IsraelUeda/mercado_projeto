@@ -6,12 +6,21 @@ from models.produto import Produto
 ARQUIVO = "produtos.json"
 
 def carregar_produtos() -> List[Produto]:
+     
     try:
         with open(ARQUIVO, "r", encoding="utf-8") as f:
             dados = json.load(f)
             return [Produto.from_dict(p) for p in dados]
     except FileNotFoundError:
         return []
+    """
+    Lê o arquivo JSON de produtos e converte cada item
+    em um objeto Produto.
+
+    Retorna:
+        Lista de objetos Produto.
+        Se o arquivo não existir, retorna uma lista vazia.
+    """
 
 def salvar_produtos(produtos: List[Produto]) -> None:
     with open(ARQUIVO, "w", encoding="utf-8") as f:
@@ -21,8 +30,16 @@ def salvar_produtos(produtos: List[Produto]) -> None:
             indent=4,
             ensure_ascii=False
         )
+    """
+    Salva a lista de produtos no arquivo JSON.
+    Cada produto é convertido para dicionário antes de salvar.
+    """
 
 def gerar_codigo(produtos: List[Produto]) -> int:
+    """
+    Gera um novo código único para o produto.
+    O código é sempre maior que o maior já existente.
+    """
     if not produtos:
         return 1
     return max(p.codigo for p in produtos) + 1
@@ -41,6 +58,11 @@ def main() -> None:
 
 
 def menu() -> None:
+    """
+    Exibe o menu principal e controla o fluxo do programa.
+    O menu fica em loop até o usuário escolher sair.
+    """
+
     while True:
         print("=====================================")
         print("============= Bem-vindo(a) ==========")
@@ -82,6 +104,11 @@ def menu() -> None:
 
 
 def cadastrar_produto() -> None:
+    """
+    Solicita dados do usuário, cria um produto
+    e salva no arquivo JSON.
+    """
+
     print('Cadastro de produto')
     print('===================')
 
@@ -101,6 +128,9 @@ def cadastrar_produto() -> None:
     return
 
 def listar_produto() -> None:
+    """
+    Carrega e exibe todos os produtos cadastrados.
+    """
     produtos = carregar_produtos()
 
     if produtos:
@@ -116,6 +146,10 @@ def listar_produto() -> None:
     return
 
 def comprar_produto() -> None:
+    """
+    Permite adicionar produtos ao carrinho em loop,
+    até o usuário digitar 'exit'.
+    """
     produtos = carregar_produtos()
 
     if not produtos:
@@ -165,6 +199,10 @@ def comprar_produto() -> None:
 
 
 def fechar_pedido() -> None:
+    """
+    Exibe os produtos do carrinho,
+    calcula o valor total e limpa o carrinho.
+    """
     if carrinho:
         valor_total = 0
         print("Produtos no carrinho")
@@ -189,6 +227,10 @@ def fechar_pedido() -> None:
     return
 
 def pega_produto_por_codigo(codigo: int) -> Produto:
+    """
+    Retorna um produto pelo código.
+    Se não existir, retorna None.
+    """
     produtos = carregar_produtos()
 
     for produto in produtos:
