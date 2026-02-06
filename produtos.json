@@ -8,5 +8,30 @@
         "codigo": 2,
         "nome": "amaciante",
         "preco": 15.0
+    },
+    {
+        "codigo": 3,
+        "nome": "",
+        "preco": 1.0
+    },
+    {
+        "codigo": 4,
+        "nome": "Cebola",
+        "preco": 5.0
+    },
+    {
+        "codigo": 5,
+        "nome": "1",
+        "preco": 1.0
+    },
+    {
+        "codigo": 6,
+        "nome": "1",
+        "preco": 1.0
+    },
+    {
+        "codigo": 7,
+        "nome": "Batata",
+        "preco": 19.0
     }
 ]

@@ -39,41 +39,46 @@ carrinho: Dict[int, int] = {}
 def main() -> None:
     menu()
 
+
 def menu() -> None:
-    print("=====================================")
-    print("============= Bem-vindo(a) ==========")
-    print("================ store ==============")
-    print("=====================================")
+    while True:
+        print("=====================================")
+        print("============= Bem-vindo(a) ==========")
+        print("================ store ==============")
+        print("=====================================")
 
+        print("1 - Cadastrar produto")
+        print("2 - Listar produto")
+        print("3 - Comprar produto")
+        print("4 - Visualizar carrinho")
+        print("5 - Fechar pedido")
+        print("6 - Sair")
 
-    print("selecione uma opção abaixo: ")
-    print('1 - Cadastrar produto')
-    print('2 - Listar produto')
-    print('3 - Comprar produto')
-    print('4 - Vizualizar carrinho')
-    print('5 - Fechar pedido')
-    print('6 - Sair')
+        try:
+            opcao = int(input("Qual sua opção? "))
 
-    opcao:int = int(input("Qual sua opcão?"))
+            if opcao == 1:
+                cadastrar_produto()
+            elif opcao == 2:
+                listar_produto()
+            elif opcao == 3:
+                comprar_produto()
+            elif opcao == 4:
+                visualizar_carrinho()
+            elif opcao == 5:
+                fechar_pedido()
+            elif opcao == 6:
+                print("Volte sempre")
+                sleep(2)
+                break
+            else:
+                print("Opção inválida")
 
-    if opcao == 1:
-        cadastrar_produto()
-    elif opcao == 2:
-        listar_produto()
-    elif opcao == 3:
-        comprar_produto()
-    elif opcao == 4:
-        visualizar_carrinho()
-    elif opcao == 5:
-        fechar_pedido()
-    elif opcao == 6:
-        print("Volte sempre")
-        sleep(2)
-        exit(0)
-    else:
-        print("Opcao inválida")
+        except ValueError:
+            print("Entrada inválida. Digite apenas números.")
+
         sleep(1)
-        menu()
+
 
 
 def cadastrar_produto() -> None:
@@ -93,7 +98,7 @@ def cadastrar_produto() -> None:
 
     print(f'O produto {produto.nome} foi cadastrado com sucesso')
     sleep(2)
-    menu()
+    return
 
 def listar_produto() -> None:
     produtos = carregar_produtos()
@@ -108,10 +113,15 @@ def listar_produto() -> None:
         print("Não há produtos cadastrados")
 
     sleep(2)
-    menu()
+    return
 
 def comprar_produto() -> None:
     produtos = carregar_produtos()
+
+    if not produtos:
+        print('Ainda não existem itens para vender.')
+        sleep(2)
+        return
 
     def adicionar_ao_carrinho(produto: Produto) -> None:
         if produto.codigo in carrinho:
@@ -121,41 +131,38 @@ def comprar_produto() -> None:
 
         print(f'Produto {produto.nome} adicionado ao carrinho')
 
-    if produtos:
-        print('Informe o código do produto:')
+    while True:
+        print('\nProdutos disponíveis:')
         for produto in produtos:
             print(produto)
             print('----------------')
 
-        codigo = int(input())
+        print('Informe outro código ou digite "exit" para voltar ao menu')
+
+        entrada = input('> ').strip()
+
+        if entrada.lower() == 'exit':
+            break
+
+        if not entrada:
+            print('Entrada vazia. Digite um código ou "exit".')
+            continue
+
+        try:
+            codigo = int(entrada)
+        except ValueError:
+            print('Entrada inválida. Digite um número ou "exit".')
+            continue
+
         produto = pega_produto_por_codigo(codigo)
 
         if produto:
             adicionar_ao_carrinho(produto)
         else:
             print('Produto não encontrado')
-    else:
-        print('Ainda não existem itens para vender.')
 
-    sleep(2)
-    menu()
+        sleep(1)
 
-def visualizar_carrinho() -> None:
-    if carrinho:
-        print('Produtos no carrinho')
-
-        for codigo, quantidade in carrinho.items():
-            produto = pega_produto_por_codigo(codigo)
-            if produto:
-                print(produto)
-                print(f'Quantidade: {quantidade}')
-                print('--------------------')
-                sleep(1)
-    else:
-        print("Ainda não existem produtos no carrinho.")
-
-    sleep(2)
-    menu()
 
 def fechar_pedido() -> None:
     if carrinho:
@@ -179,7 +186,7 @@ def fechar_pedido() -> None:
         print("Ainda não existem produtos no carrinho")
 
     sleep(2)
-    menu()
+    return
 
 def pega_produto_por_codigo(codigo: int) -> Produto:
     produtos = carregar_produtos()
