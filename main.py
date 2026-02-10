@@ -1,33 +1,20 @@
-from fastapi import FastAPI, HTTPException
-from typing import List
+from fastapi import FastAPI
+from schemas.produto_schema import ProdutoCreate, ProdutoResponse
+from services import produto_service
 
-from models.produto import Produto
-from schemas.produto_schema import ProdutoSchema
-from repositories.produto_repository import (
-    carregar_produtos,
-    salvar_produtos,
-    gerar_codigo
-)
+app = FastAPI()
 
-app = FastAPI(title="API Mercado")
+@app.get("/")
+def home():
+    return {"status": "API do mercado rodando"}
 
-@app.get("/produtos", response_model=List[ProdutoSchema])
+@app.get("/produtos", response_model=list[ProdutoResponse])
 def listar_produtos():
-    produtos = carregar_produtos()
-    return [p.to_dict() for p in produtos]
+    return produto_service.listar_produtos()
 
-
-@app.post("/produtos", response_model=ProdutoSchema)
-def cadastrar_produto(produto: ProdutoSchema):
-    produtos = carregar_produtos()
-
-    novo_produto = Produto(
-        codigo=gerar_codigo(produtos),
-        nome=produto.nome,
-        preco=produto.preco
+@app.post("/produtos", response_model=ProdutoResponse)
+def criar_produto(produto: ProdutoCreate):
+    return produto_service.criar_produto(
+        produto.nome,
+        produto.preco
     )
-
-    produtos.append(novo_produto)
-    salvar_produtos(produtos)
-
-    return novo_produto.to_dict()
