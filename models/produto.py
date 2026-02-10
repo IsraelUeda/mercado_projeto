@@ -26,7 +26,7 @@ class Produto:
         }
 
     @staticmethod
-    def from_dict(dados: dict):
+    def from_dict(dados: dict) -> "Produto":
         return Produto(
             dados["codigo"],
             dados["nome"],
