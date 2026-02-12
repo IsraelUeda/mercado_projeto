@@ -2,7 +2,7 @@ import json
 from typing import List
 from models.produto import Produto
 
-ARQUIVO = "produtos.json"
+ARQUIVO = "data/produtos.json"
 
 def carregar() -> List[Produto]:
     try:

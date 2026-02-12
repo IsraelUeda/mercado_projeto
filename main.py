@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from schemas.produto_schema import ProdutoCreate, ProdutoResponse
 from services import produto_service
+import json
 
 app = FastAPI()
 
