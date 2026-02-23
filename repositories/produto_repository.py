@@ -1,22 +1,12 @@
-import json
-from typing import List
-from models.produto import Produto
+from sqlalchemy.orm import Session
+from models.produto_model import Produto
 
-ARQUIVO = "data/produtos.json"
+def listar(db: Session):
+    return db.query(Produto).all()
 
-def carregar() -> List[Produto]:
-    try:
-        with open(ARQUIVO, "r", encoding="utf-8") as f:
-            dados = json.load(f)
-            return [Produto.from_dict(p) for p in dados]
-    except FileNotFoundError:
-        return []
-
-def salvar(produtos: List[Produto]) -> None:
-    with open(ARQUIVO, "w", encoding="utf-8") as f:
-        json.dump([p.to_dict() for p in produtos], f, indent=4)
-
-def proximo_codigo(produtos: List[Produto]) -> int:
-    if not produtos:
-        return 1
-    return max(p.codigo for p in produtos) + 1
+def criar(db: Session, nome: str, preco: float):
+    produto = Produto(nome=nome, preco=preco)
+    db.add(produto)
+    db.commit()
+    db.refresh(produto)
+    return produto
