@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mercado</title>
+</head>
+<body>
+
+    <h1>Lista de Produtos</h1>
+
+    <ul id="lista"></ul>
+
+    <h2>Criar Produto</h2>
+    <input type="text" id="nome" placeholder="Nome">
+    <input type="number" id="preco" placeholder="Preço">
+    <button onclick="criarProduto()">Salvar</button>
+
+    <script>
+        async function carregarProdutos() {
+            const resposta = await fetch("http://127.0.0.1:8000/produtos");
+            const produtos = await resposta.json();
+
+            const lista = document.getElementById("lista");
+            lista.innerHTML = "";
+
+            produtos.forEach(p => {
+                const item = document.createElement("li");
+                item.textContent = p.nome + " - R$ " + p.preco;
+                lista.appendChild(item);
+            });
+        }
+
+        async function criarProduto() {
+            const nome = document.getElementById("nome").value;
+            const preco = parseFloat(document.getElementById("preco").value);
+
+            await fetch("http://127.0.0.1:8000/produtos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ nome, preco })
+            });
+
+            carregarProdutos();
+        }
+
+        carregarProdutos();
+    </script>
+
+</body>
+</html>

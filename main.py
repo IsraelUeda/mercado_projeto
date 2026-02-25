@@ -4,8 +4,11 @@ from database.database import SessionLocal,engine
 from services import produto_service
 from schemas.produto_schema import ProdutoCreate, ProdutoResponse
 from models.produto_model import Base
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
+
+app.mount("/front", StaticFiles(directory="static", html=True), name="static")
 
 Base.metadata.create_all(bind=engine)
 
