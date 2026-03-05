@@ -5,9 +5,11 @@ from services import produto_service
 from schemas.produto_schema import ProdutoCreate, ProdutoResponse
 from models.produto_model import Base
 from fastapi.staticfiles import StaticFiles
+from router import carrinho_router
 
 app = FastAPI()
 
+app.include_router(carrinho_router.router)
 app.mount("/front", StaticFiles(directory="static", html=True), name="static")
 
 Base.metadata.create_all(bind=engine)
