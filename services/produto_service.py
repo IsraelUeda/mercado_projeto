@@ -6,3 +6,6 @@ def listar_produtos(db: Session):
 
 def criar_produto(db: Session, nome: str, preco: float):
     return produto_repository.criar(db, nome, preco)
+
+def excluir_produto(db: Session, produto_id: int):
+    return produto_repository.excluir(db, produto_id)

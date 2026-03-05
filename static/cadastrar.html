@@ -6,6 +6,7 @@
 </head>
 <body>
 
+    
     <h1>Cadastrar Produto</h1>
 
     <label>Nome:</label>
@@ -20,9 +21,34 @@
 
     <p id="mensagem"></p>
 
+    <hr> <h1>Excluir Produto</h1>
+
+    <label>ID do Produto:</label>
+    <input type="number" id="id_excluir" placeholder="Ex: 1">
+    <br><br>
+
+    <button onclick="excluir(document.getElementById('id_excluir').value)">Excluir</button>
+
     
     <ul id="lista"></ul>
+
+
     <script>
+         async function carregarProdutos() {
+            const resposta = await fetch("/produtos");
+            const produtos = await resposta.json();
+
+            const lista = document.getElementById("lista");
+
+            produtos.forEach(produto => {
+                const item = document.createElement("li");
+                item.textContent = produto.nome + " - R$ " + produto.preco + " (ID: " + produto.codigo + ")";
+                lista.appendChild(item);
+            });
+        }
+
+        carregarProdutos();
+
         async function cadastrar() {
             const nome = document.getElementById("nome").value;
             const preco = parseFloat(document.getElementById("preco").value);
@@ -49,6 +75,37 @@
                 document.getElementById("mensagem").textContent = "Erro ao cadastrar produto.";
             }
         }
+
+      async function excluir(idProduto) {
+    // 1. Verifica se o campo não está vazio
+    if (!idProduto) {
+        document.getElementById("mensagem").textContent = "Por favor, digite um código para excluir.";
+        return; 
+    }
+
+    if (!confirm("Tem certeza que deseja excluir o produto " + idProduto + "?")) {
+        return; 
+    }
+
+    try {
+        const url = "/produtos/" + idProduto;
+
+        const resposta = await fetch(url, {
+            method: "DELETE"
+        });
+
+        if (resposta.ok) {
+            document.getElementById("mensagem").textContent = "Produto excluído com sucesso!";
+            document.getElementById("id_excluir").value = ""; // Limpa o campo
+        } else {
+            // Se o servidor retornar 404 (Não Encontrado)
+            document.getElementById("mensagem").textContent = "Erro: Produto não encontrado.";
+        }
+    } catch (erro) {
+        console.error(erro);
+        document.getElementById("mensagem").textContent = "Erro de conexão ao excluir.";
+    }
+}
     
     </script>
 
