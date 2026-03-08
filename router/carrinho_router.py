@@ -4,6 +4,7 @@ from database.database import get_db
 from services import carrinho_service
 from schemas.carrinho_schema import ItemCreate, CarrinhoResponse
 
+
 router = APIRouter(prefix="/carrinho", tags=["Carrinho"])
 
 
@@ -22,9 +23,9 @@ def adicionar(carrinho_id: int, item: ItemCreate, db: Session = Depends(get_db))
         item.valor_unitario
     )
 
-@router.get("/{carrinho_id}")
+@router.get("/{carrinho_id}", response_model=CarrinhoResponse)
 def listar_carrinho(carrinho_id: int, db: Session = Depends(get_db)):
-    # Certifique-se de que o carrinho_service tem uma função para buscar o carrinho
+    # Busca no banco
     carrinho = carrinho_service.buscar_carrinho(db, carrinho_id)
     
     if not carrinho:

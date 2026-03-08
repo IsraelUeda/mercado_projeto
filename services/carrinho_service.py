@@ -28,3 +28,7 @@ def adicionar_item(db: Session, carrinho_id: int, produto_id: int, quantidade: i
     )
 
     return carrinho_repository.adicionar_item(db, novo_item)
+
+def buscar_carrinho(db: Session, carrinho_id: int):
+    # Faz a ponte repassando o pedido para o repositório (que é quem fala com o banco)
+    return carrinho_repository.buscar_carrinho(db, carrinho_id)

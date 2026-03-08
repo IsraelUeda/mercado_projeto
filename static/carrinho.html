@@ -65,7 +65,7 @@
             }
 
             try {
-                const resposta = await fetch(`/carrinhos/${carrinhoId}`);
+                const resposta = await fetch(`/carrinho/${carrinhoId}`);
 
                 if (resposta.ok) {
                     const dados = await resposta.json();
@@ -134,12 +134,16 @@
             try {
                 let carrinhoId = localStorage.getItem("carrinho_id");
 
-                // Se não tem carrinho, cria um novo no Python
-                if (!carrinhoId) {
-                    const respostaNovo = await fetch("/carrinhos", { method: "POST" });
+                // Se estiver vazio ou se tiver bugado como "undefined" antes, limpamos!
+                if (!carrinhoId || carrinhoId === "undefined") {
+                    const respostaNovo = await fetch("/carrinho/", { method: "POST" });
+                    
                     if (respostaNovo.ok) {
                         const dados = await respostaNovo.json();
-                        carrinhoId = dados.carrinho_id;
+                        
+                        // O SEGREDO ESTÁ AQUI: Cobre as duas opções que o Python pode ter mandado!
+                        carrinhoId = dados.id || dados.carrinho_id; 
+                        
                         localStorage.setItem("carrinho_id", carrinhoId);
                     } else {
                         alert("Erro ao criar carrinho no servidor.");
@@ -148,7 +152,7 @@
                 }
 
                 // Envia o item para o banco de dados
-                const respostaItem = await fetch(`/carrinhos/${carrinhoId}/itens`, {
+                const respostaItem = await fetch(`/carrinho/${carrinhoId}/item`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -159,7 +163,6 @@
                 });
 
                 if (respostaItem.ok) {
-                    // O SEGREDO ESTÁ AQUI: Atualiza o carrinho na mesma hora sem recarregar a página!
                     carregarCarrinho(); 
                 } else {
                     alert("Erro ao adicionar produto.");
