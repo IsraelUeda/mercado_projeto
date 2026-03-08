@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database.database import SessionLocal,engine
-from services import produto_service
+from services import produto_service, carrinho_service
+from fastapi import HTTPException
 from schemas.produto_schema import ProdutoCreate, ProdutoResponse
 from models.produto_model import Base
 from fastapi.staticfiles import StaticFiles
 from router import carrinho_router
-from repositories import produto_repository
+from repositories import produto_repository,carrinho_repository
 
 app = FastAPI()
 
@@ -46,3 +47,4 @@ def deletar_produto(codigo: int, db: Session = Depends(get_db)):
     else:
         # Se a função retornou False, é porque esse código não existe no banco
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
+    

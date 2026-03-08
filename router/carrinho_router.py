@@ -21,3 +21,14 @@ def adicionar(carrinho_id: int, item: ItemCreate, db: Session = Depends(get_db))
         item.quantidade,
         item.valor_unitario
     )
+
+@router.get("/{carrinho_id}")
+def listar_carrinho(carrinho_id: int, db: Session = Depends(get_db)):
+    # Certifique-se de que o carrinho_service tem uma função para buscar o carrinho
+    carrinho = carrinho_service.buscar_carrinho(db, carrinho_id)
+    
+    if not carrinho:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Carrinho não encontrado")
+        
+    return carrinho

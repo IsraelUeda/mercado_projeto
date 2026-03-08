@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Mercado - Carrinho</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f9f9f9; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; text-align: center; }
+        .cabecalho-carrinho { display: flex; justify-content: space-between; font-weight: bold; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 10px; }
+        #itens-carrinho { min-height: 50px; margin-bottom: 20px; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .resumo { text-align: right; font-size: 1.2em; margin-bottom: 20px; }
+        .resumo span { font-weight: bold; color: #27ae60; }
+        .botoes { display: flex; justify-content: space-between; margin-top: 20px; margin-bottom: 40px;}
+        button, .btn-voltar { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center;}
+        .btn-voltar { background-color: #ccc; color: #333; }
+        .btn-finalizar { background-color: #3498db; color: white; }
+        .btn-adicionar { background-color: #2ecc71; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🛒 Meu Carrinho</h1>
+
+        <div class="cabecalho-carrinho">
+            <span>Produto</span>
+            <span>Subtotal</span>
+        </div>
+
+        <div id="itens-carrinho">
+            <p>Carregando itens do carrinho...</p>
+        </div>
+
+        <div class="resumo">
+            Total: <span id="total-carrinho">R$ 0.00</span>
+        </div>
+
+        <div class="botoes">
+            <a href="index.html" class="btn-voltar">⬅️ Voltar à Loja</a>
+            <button class="btn-finalizar" onclick="finalizarCompra()">Finalizar Compra</button>
+        </div>
+
+        <hr>
+
+        <h2>➕ Produtos Disponíveis</h2>
+        <div id="lista-loja">
+            <p>Carregando produtos da loja...</p>
+        </div>
+    </div>
+
+    <script>
+        // 1. FUNÇÃO DO CARRINHO (Busca os itens que já estão no carrinho)
+        async function carregarCarrinho() {
+            const carrinhoId = localStorage.getItem("carrinho_id");
+            const conteiner = document.getElementById("itens-carrinho");
+            const spanTotal = document.getElementById("total-carrinho");
+
+            if (!carrinhoId) {
+                conteiner.innerHTML = "<p>Seu carrinho está vazio.</p>";
+                spanTotal.textContent = "R$ 0.00";
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/carrinhos/${carrinhoId}`);
+
+                if (resposta.ok) {
+                    const dados = await resposta.json();
+                    conteiner.innerHTML = ""; 
+                    let totalCompra = 0;
+
+                    if (!dados.itens || dados.itens.length === 0) {
+                        conteiner.innerHTML = "<p>Seu carrinho está vazio.</p>";
+                        spanTotal.textContent = "R$ 0.00";
+                        return;
+                    }
+
+                    dados.itens.forEach(item => {
+                        const subtotal = item.quantidade * item.valor_unitario;
+                        totalCompra += subtotal;
+
+                        const divItem = document.createElement("div");
+                        divItem.className = "item";
+                        divItem.innerHTML = `
+                            <span><strong>Produto ID: ${item.produto_id}</strong> (Qtd: ${item.quantidade})</span>
+                            <span>R$ ${subtotal.toFixed(2)}</span>
+                        `;
+                        conteiner.appendChild(divItem);
+                    });
+
+                    spanTotal.textContent = `R$ ${totalCompra.toFixed(2)}`;
+                }
+            } catch (erro) {
+                console.error("Erro:", erro);
+            }
+        }
+
+        // 2. FUNÇÃO DA LOJA (Busca todos os produtos do banco para mostrar na tela)
+        async function carregarProdutosDaLoja() {
+            const conteiner = document.getElementById("lista-loja");
+            try {
+                const resposta = await fetch("/produtos"); 
+
+                if (resposta.ok) {
+                    const produtos = await resposta.json();
+                    conteiner.innerHTML = ""; 
+
+                    if (produtos.length === 0) {
+                        conteiner.innerHTML = "<p>Nenhum produto cadastrado no banco de dados.</p>";
+                        return;
+                    }
+
+                    // Desenha cada produto com um botão de adicionar
+                    produtos.forEach(produto => {
+                        const divItem = document.createElement("div");
+                        divItem.className = "item";
+                        divItem.innerHTML = `
+                            <span>${produto.nome} - R$ ${produto.preco.toFixed(2)}</span>
+                            <button class="btn-adicionar" onclick="adicionarAoCarrinho(${produto.codigo}, ${produto.preco})">➕ Adicionar</button>
+                        `;
+                        conteiner.appendChild(divItem);
+                    });
+                }
+            } catch (erro) {
+                console.error("Erro ao buscar produtos:", erro);
+            }
+        }
+
+        // 3. FUNÇÃO DE ADICIONAR (Quando clica no botão ➕ Adicionar)
+        async function adicionarAoCarrinho(produtoCodigo, precoProduto) {
+            try {
+                let carrinhoId = localStorage.getItem("carrinho_id");
+
+                // Se não tem carrinho, cria um novo no Python
+                if (!carrinhoId) {
+                    const respostaNovo = await fetch("/carrinhos", { method: "POST" });
+                    if (respostaNovo.ok) {
+                        const dados = await respostaNovo.json();
+                        carrinhoId = dados.carrinho_id;
+                        localStorage.setItem("carrinho_id", carrinhoId);
+                    } else {
+                        alert("Erro ao criar carrinho no servidor.");
+                        return;
+                    }
+                }
+
+                // Envia o item para o banco de dados
+                const respostaItem = await fetch(`/carrinhos/${carrinhoId}/itens`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        produto_id: produtoCodigo,
+                        quantidade: 1,
+                        valor_unitario: precoProduto
+                    })
+                });
+
+                if (respostaItem.ok) {
+                    // O SEGREDO ESTÁ AQUI: Atualiza o carrinho na mesma hora sem recarregar a página!
+                    carregarCarrinho(); 
+                } else {
+                    alert("Erro ao adicionar produto.");
+                }
+
+            } catch (erro) {
+                console.error("Erro de conexão:", erro);
+            }
+        }
+
+        // Função para finalizar a compra
+        function finalizarCompra() {
+            const carrinhoId = localStorage.getItem("carrinho_id");
+            if (!carrinhoId) {
+                alert("O carrinho está vazio!");
+                return;
+            }
+            alert("Compra finalizada com sucesso!");
+            localStorage.removeItem("carrinho_id"); 
+            window.location.href = "index.html"; 
+        }
+
+        // Inicia as duas listas (carrinho e produtos) assim que a página abre
+        window.onload = function() {
+            carregarCarrinho();
+            carregarProdutosDaLoja();
+        };
+    </script>
+</body>
+</html>
