@@ -17,7 +17,13 @@
     <input type="number" id="preco" step="0.01">
     <br><br>
 
+    
+    <label>Quantidade de produtos:</label>
+    <input type="number" id="quantidade_estoque" step="0.01">
+    <br><br>
+
     <button onclick="cadastrar()">Cadastrar</button>
+    <br><br>
 
     <p id="mensagem"></p>
 
@@ -42,7 +48,7 @@
 
             produtos.forEach(produto => {
                 const item = document.createElement("li");
-                item.textContent = produto.nome + " - R$ " + produto.preco + " (ID: " + produto.codigo + ")";
+                item.textContent = produto.nome + " - R$ " + produto.preco + " (ID: " + produto.codigo + ") + Estoque: " + produto.quantidade_estoque;
                 lista.appendChild(item);
             });
         }
@@ -52,6 +58,7 @@
         async function cadastrar() {
             const nome = document.getElementById("nome").value;
             const preco = parseFloat(document.getElementById("preco").value);
+            const quantidade_estoque = parseInt(document.getElementById("quantidade_estoque").value, 10);
 
             if (!nome || isNaN(preco)) {
                 document.getElementById("mensagem").textContent = "Preencha todos os campos corretamente.";
@@ -63,7 +70,7 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ nome, preco })
+                body: JSON.stringify({ nome, preco, quantidade_estoque: quantidade_estoque })
             });
 
             if (resposta.ok) {

@@ -119,7 +119,7 @@
                         divItem.className = "item";
                         divItem.innerHTML = `
                             <span>${produto.nome} - R$ ${produto.preco.toFixed(2)}</span>
-                            <button class="btn-adicionar" onclick="adicionarAoCarrinho(${produto.codigo}, ${produto.preco})">➕ Adicionar</button>
+                            <button class="btn-adicionar" onclick="adicionarAoCarrinho(${produto.codigo}, ${produto.preco})">+ Adicionar</button>
                         `;
                         conteiner.appendChild(divItem);
                     });
@@ -129,19 +129,19 @@
             }
         }
 
-        // 3. FUNÇÃO DE ADICIONAR (Quando clica no botão ➕ Adicionar)
+        // 3. FUNÇÃO DE ADICIONAR 
         async function adicionarAoCarrinho(produtoCodigo, precoProduto) {
             try {
                 let carrinhoId = localStorage.getItem("carrinho_id");
 
-                // Se estiver vazio ou se tiver bugado como "undefined" antes, limpamos!
+                // Se estiver vazio ou se tiver bugado como "undefined"
                 if (!carrinhoId || carrinhoId === "undefined") {
                     const respostaNovo = await fetch("/carrinho/", { method: "POST" });
                     
                     if (respostaNovo.ok) {
                         const dados = await respostaNovo.json();
                         
-                        // O SEGREDO ESTÁ AQUI: Cobre as duas opções que o Python pode ter mandado!
+                        
                         carrinhoId = dados.id || dados.carrinho_id; 
                         
                         localStorage.setItem("carrinho_id", carrinhoId);

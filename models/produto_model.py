@@ -7,3 +7,4 @@ class Produto(Base):
     codigo = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
     preco = Column(Float, nullable=False)
+    quantidade_estoque = Column(Integer, default=0)

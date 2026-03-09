@@ -30,7 +30,7 @@ def listar_produtos(db: Session = Depends(get_db)):
 
 @app.post("/produtos", response_model=ProdutoResponse)
 def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):
-    return produto_service.criar_produto(db, produto.nome, produto.preco)
+    return produto_service.criar_produto(db, produto.nome, produto.preco, produto.quantidade_estoque)
 
 @app.delete("/produtos/{codigo}")
 def deletar_produto(codigo: int, db: Session = Depends(get_db)):
