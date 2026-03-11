@@ -26,3 +26,7 @@ def adicionar_item(db: Session, item: ItemCarrinho):
     db.commit()
     db.refresh(item)
     return item
+
+def remover_item(db: Session, item: ItemCarrinho):
+    db.delete(item)
+    db.commit()

@@ -52,7 +52,7 @@
     </div>
 
     <script>
-        // 1. FUNÇÃO DO CARRINHO (Busca os itens que já estão no carrinho)
+        // 1. FUNÇÃO DO CARRINHO
         async function carregarCarrinho() {
             const carrinhoId = localStorage.getItem("carrinho_id");
             const conteiner = document.getElementById("itens-carrinho");
@@ -85,7 +85,12 @@
                         const divItem = document.createElement("div");
                         divItem.className = "item";
                         divItem.innerHTML = `
-                            <span><strong>Produto ID: ${item.produto_id}</strong> (Qtd: ${item.quantidade})</span>
+                            <span>
+                                <strong>Produto ID: ${item.produto_id}</strong> 
+                                <button onclick="alterarQuantidade(${item.produto_id}, ${item.quantidade - 1})" style="padding: 2px 8px; margin-left: 10px; cursor: pointer;">-</button>
+                                <span style="margin: 0 5px;">${item.quantidade}</span>
+                                <button onclick="alterarQuantidade(${item.produto_id}, ${item.quantidade + 1})" style="padding: 2px 8px; cursor: pointer;">+</button>
+                            </span>
                             <span>R$ ${subtotal.toFixed(2)}</span>
                         `;
                         conteiner.appendChild(divItem);
@@ -98,7 +103,7 @@
             }
         }
 
-        // 2. FUNÇÃO DA LOJA (Busca todos os produtos do banco para mostrar na tela)
+        // 2. FUNÇÃO DA LOJA
         async function carregarProdutosDaLoja() {
             const conteiner = document.getElementById("lista-loja");
             try {
@@ -113,12 +118,11 @@
                         return;
                     }
 
-                    // Desenha cada produto com um botão de adicionar
                     produtos.forEach(produto => {
                         const divItem = document.createElement("div");
                         divItem.className = "item";
                         divItem.innerHTML = `
-                            <span>${produto.nome} - R$ ${produto.preco.toFixed(2)}</span>
+                            <span>${produto.nome} - R$ ${produto.preco.toFixed(2)} (Estoque: ${produto.quantidade_estoque})</span>
                             <button class="btn-adicionar" onclick="adicionarAoCarrinho(${produto.codigo}, ${produto.preco})">+ Adicionar</button>
                         `;
                         conteiner.appendChild(divItem);
@@ -134,16 +138,12 @@
             try {
                 let carrinhoId = localStorage.getItem("carrinho_id");
 
-                // Se estiver vazio ou se tiver bugado como "undefined"
                 if (!carrinhoId || carrinhoId === "undefined") {
                     const respostaNovo = await fetch("/carrinho/", { method: "POST" });
                     
                     if (respostaNovo.ok) {
                         const dados = await respostaNovo.json();
-                        
-                        
                         carrinhoId = dados.id || dados.carrinho_id; 
-                        
                         localStorage.setItem("carrinho_id", carrinhoId);
                     } else {
                         alert("Erro ao criar carrinho no servidor.");
@@ -151,7 +151,6 @@
                     }
                 }
 
-                // Envia o item para o banco de dados
                 const respostaItem = await fetch(`/carrinho/${carrinhoId}/item`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -165,7 +164,8 @@
                 if (respostaItem.ok) {
                     carregarCarrinho(); 
                 } else {
-                    alert("Erro ao adicionar produto.");
+                    const erro = await respostaItem.json();
+                    alert(erro.detail || "Erro ao adicionar produto.");
                 }
 
             } catch (erro) {
@@ -173,19 +173,62 @@
             }
         }
 
-        // Função para finalizar a compra
-        function finalizarCompra() {
+        // 4. FUNÇÃO DE ALTERAR QUANTIDADE (+ ou -)
+        async function alterarQuantidade(produtoId, novaQuantidade) {
             const carrinhoId = localStorage.getItem("carrinho_id");
-            if (!carrinhoId) {
-                alert("O carrinho está vazio!");
-                return;
+            if (!carrinhoId) return;
+
+            try {
+                const resposta = await fetch(`/carrinho/${carrinhoId}/item/${produtoId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ quantidade: novaQuantidade })
+                });
+
+                if (resposta.ok) {
+                    carregarCarrinho();
+                } else {
+                    const dadosErro = await resposta.json();
+                    alert(dadosErro.detail || "Erro ao atualizar a quantidade.");
+                }
+            } catch (erro) {
+                console.error("Erro de conexão:", erro);
             }
-            alert("Compra finalizada com sucesso!");
-            localStorage.removeItem("carrinho_id"); 
-            window.location.href = "index.html"; 
         }
 
-        // Inicia as duas listas (carrinho e produtos) assim que a página abre
+        // 5. FUNÇÃO DE FINALIZAR COMPRA
+        async function finalizarCompra() {
+            const carrinhoId = localStorage.getItem("carrinho_id");
+            if (!carrinhoId) {
+                alert("O carrinho está vazio ou ainda não foi criado!");
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`/carrinho/${carrinhoId}/finalizar`, {
+                    method: "POST"
+                });
+
+                if (resposta.ok) {
+                    alert("Compra finalizada com sucesso! O estoque foi descontado.");
+                    localStorage.removeItem("carrinho_id"); 
+                    window.location.href = "index.html"; 
+                } else {
+                    // Se o Python retornar um erro no formato correto (JSON), o JavaScript lê aqui
+                    try {
+                        const dadosErro = await resposta.json();
+                        alert("Erro do servidor: " + dadosErro.detail);
+                    } catch(e) {
+                        // Se o Python quebrar de vez (Erro 500), cai neste alerta genérico
+                        alert("Ocorreu um erro interno grave no servidor Python ao finalizar a compra.");
+                    }
+                }
+            } catch (erro) {
+                console.error("Erro de conexão:", erro);
+            }
+        }
+
+        // Inicia as duas listas assim que a página abre
         window.onload = function() {
             carregarCarrinho();
             carregarProdutosDaLoja();
